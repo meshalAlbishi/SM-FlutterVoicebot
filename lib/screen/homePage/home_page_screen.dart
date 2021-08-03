@@ -4,7 +4,6 @@ import 'components/home_page_body.dart';
 import 'package:flutter_voicebot/services/STT.dart';
 import 'package:flutter_voicebot/services/TTS.dart';
 
-
 import 'components/home_page_sttIcon.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -19,18 +18,21 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   STT _stt = STT();
   TTS _tts = TTS();
+
   // IBM _ibm = IBM();
   // late var bott = createBot();
 
   @override
   void initState() {
     super.initState();
-    createBot();
-    _speak("");
+
+    _speak("How was your experience");
+
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -42,28 +44,34 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _listen() async {
-    if (!_stt.isListening) {
-      bool available = await _stt.speech.initialize(
-        onStatus: (val) => print('onStatus: $val'),
-        onError: (val) => print('onError: $val'),
-      );
+    try {
+      if (!_stt.isListening) {
+        bool available = await _stt.speech.initialize(
+          onStatus: (val) => print('onStatus: $val'),
+          onError: (val) => print('onError: $val'),
+        );
 
-      if (available) {
-        setState(() => _stt.isListening = true);
+        if (available) {
+          setState(() => _stt.isListening = true);
 
-        _stt.speech.listen(
-            onResult: (val) => setState(() {
-                  _stt.text = val.recognizedWords;
-                  if (val.hasConfidenceRating && val.confidence > 0) {
-                    _stt.confidence = val.confidence;
-                  }
-                }));
+          _stt.speech.listen(
+              onResult: (val) => setState(() {
+
+                    sendToIBM(val.recognizedWords);
+                    _speak(_stt.text);
+                    if (val.hasConfidenceRating && val.confidence > 0) {
+                      _stt.confidence = val.confidence;
+                    }
+                  }));
+        }
+      } else {
+        setState(() => _stt.isListening = false);
+        _stt.speech.stop();
+
+        // do ibm watson
       }
-    } else {
-      setState(() => _stt.isListening = false);
-      _stt.speech.stop();
-
-      // do ibm watson
+    } catch (PlatformException) {
+      _speak('enable the mice please');
     }
   }
 
@@ -71,21 +79,21 @@ class _MyHomePageState extends State<MyHomePage> {
     _tts.speak(text);
   }
 
-  void createBot() async{
-    print('p');
+  Future<String?> sendToIBM(String message) async {
     final auth = IbmWatsonAssistantAuth(
       assistantId: '8d02e15e-5025-44ca-b959-5ce3f97fb585',
-      url: 'https://api.eu-gb.assistant.watson.cloud.ibm.com/instances/c4c20ac7-0e61-4440-b921-1ad79488a627/v2/assistants/8d02e15e-5025-44ca-b959-5ce3f97fb585/sessions',
+      url:
+          'https://api.eu-gb.assistant.watson.cloud.ibm.com/instances/c4c20ac7-0e61-4440-b921-1ad79488a627',
       apikey: 'TPjYQyz8FwS_tr_E1xgCFkFkZAnZaIbUt629dj3-U9XA',
     );
 
     final bot = IbmWatsonAssistant(auth);
 
     final sessionId = await bot.createSession();
-    print(sessionId);
 
-    final botRes = await bot.sendInput('good', sessionId: sessionId);
+    final botRes = await bot.sendInput(message, sessionId: sessionId);
     print(botRes.responseText);
+    _stt.text = botRes.responseText!;
 
     bot.deleteSession(sessionId!);
 
