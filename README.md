@@ -1,16 +1,13 @@
-# flutter_voicebot
+# SM-FlutterVoicebot
 
-A new Flutter project.
+## What is the Task?
+Create a mobile application that is connected with IBM Watson's assistant. 
+The application will interact with the user using speech, and the bot also will respond in voice also.
 
-## Getting Started
+## Dependencies
+To have the ability to create your own voice bot you need the following:
+- You should have an [IBM Cloud](https://www.ibm.com/sa-en/cloud) account and create your own assistant.
+- [speech_to_text](https://pub.dev/packages/speech_to_text)
+- [text_to_speech](https://pub.dev/packages/text_to_speech)
+- [ibm_watson_assistant](https://pub.dev/packages/ibm_watson_assistant)
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
